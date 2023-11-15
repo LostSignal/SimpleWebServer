@@ -3,6 +3,9 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 
+// Clear Chrome Cache
+// Directory.GetFiles(@"%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache", "*", SearchOption.AllDirectories).ToList().ForEach(x => File.Delete(x));
+
 // Getting the port from the command line
 short port = 9999;
 
@@ -28,7 +31,7 @@ serverOptions.FileProvider = new PhysicalFileProvider(Directory.GetCurrentDirect
 serverOptions.StaticFileOptions.ContentTypeProvider = fileExtensions;
 
 // Configuring Port and Content Root
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 builder.WebHost.UseContentRoot(Directory.GetCurrentDirectory());
 builder.WebHost.ConfigureKestrel(serverOptions => serverOptions.ListenAnyIP(port));
 
