@@ -1,10 +1,9 @@
 
 using System.Diagnostics;
+using System.IO.Compression;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
-
-// Clear Chrome Cache
-// Directory.GetFiles(@"%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache", "*", SearchOption.AllDirectories).ToList().ForEach(x => File.Delete(x));
 
 // Getting the port from the command line
 short port = 9999;
@@ -21,21 +20,57 @@ Process.Start(new ProcessStartInfo
     UseShellExecute = true,
 });
 
-// Configuring options
-var fileExtensions = new FileExtensionContentTypeProvider();
-fileExtensions.Mappings[".data"] = "application/octet-stream";
-fileExtensions.Mappings[".bundle"] = "application/octet-stream";
+// Configuring FileServer
+var fileServerOptions = new FileServerOptions();
+fileServerOptions.EnableDefaultFiles = true;
+fileServerOptions.FileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
+fileServerOptions.StaticFileOptions.ContentTypeProvider = new FileExtensionContentTypeProvider();
+fileServerOptions.StaticFileOptions.ServeUnknownFileTypes = true;
 
-var serverOptions = new FileServerOptions();
-serverOptions.FileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
-serverOptions.StaticFileOptions.ContentTypeProvider = fileExtensions;
+// Overriding Response Headers
+fileServerOptions.StaticFileOptions.OnPrepareResponse = ctx =>
+{
+    // Making sure nothing we send out is ever cached
+    ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
 
-// Configuring Port and Content Root
+    // Unity Specific extentions
+    Modify(ctx.File.Name, ".data",         "application/octet-stream");
+    Modify(ctx.File.Name, ".bundle",       "application/octet-stream");
+    Modify(ctx.File.Name, ".symbols.json", "application/octet-stream");
+    Modify(ctx.File.Name, ".js",           "application/javascript");
+    Modify(ctx.File.Name, ".wasm",         "application/wasm");
+
+    void Modify(string fileName, string extension, string contentType)
+    {
+        if (fileName.EndsWith(extension) || fileName.EndsWith(extension + ".gz") || fileName.EndsWith(extension + ".br"))
+        {
+            ctx.Context.Response.Headers["Content-Type"] = contentType;
+
+            if (fileName.EndsWith(".gz"))
+            {
+                ctx.Context.Response.Headers["Content-Encoding"] = "gzip";
+            }
+            else if (fileName.EndsWith(".br"))
+            {
+                ctx.Context.Response.Headers["Content-Encoding"] = "br";
+            }
+        }
+    }
+};
+
+// Creating Builder
 var builder = WebApplication.CreateSlimBuilder(args);
-builder.WebHost.UseContentRoot(Directory.GetCurrentDirectory());
 builder.WebHost.ConfigureKestrel(serverOptions => serverOptions.ListenAnyIP(port));
+builder.Services.AddResponseCompression(options => 
+{
+    options.Providers.Add<GzipCompressionProvider>();
+    options.Providers.Add<BrotliCompressionProvider>();
+});
 
-// Running the webserver
+builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+
+// Running the Web Server
 var app = builder.Build();
-app.UseFileServer(serverOptions);
+app.UseResponseCompression();
+app.UseFileServer(fileServerOptions);
 app.Run();
