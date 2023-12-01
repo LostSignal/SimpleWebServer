@@ -59,7 +59,7 @@ fileServerOptions.StaticFileOptions.OnPrepareResponse = ctx =>
 };
 
 // Creating Builder
-var builder = WebApplication.CreateSlimBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(serverOptions => serverOptions.ListenAnyIP(port));
 builder.Services.AddResponseCompression(options => 
 {
