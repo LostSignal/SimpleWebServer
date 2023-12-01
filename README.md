@@ -1,2 +1,2 @@
 # SimpleWebServer
-A very simple webserver for running websites locally.
+A very simple webserver for running local websites and Unity WebGL builds.
