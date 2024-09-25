@@ -34,11 +34,11 @@ fileServerOptions.StaticFileOptions.OnPrepareResponse = ctx =>
     ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
 
     // Unity Specific extentions
-    Modify(ctx.File.Name, ".data",         "application/octet-stream");
-    Modify(ctx.File.Name, ".bundle",       "application/octet-stream");
+    Modify(ctx.File.Name, ".data", "application/octet-stream");
+    Modify(ctx.File.Name, ".bundle", "application/octet-stream");
     Modify(ctx.File.Name, ".symbols.json", "application/octet-stream");
-    Modify(ctx.File.Name, ".js",           "application/javascript");
-    Modify(ctx.File.Name, ".wasm",         "application/wasm");
+    Modify(ctx.File.Name, ".js", "application/javascript");
+    Modify(ctx.File.Name, ".wasm", "application/wasm");
 
     void Modify(string fileName, string extension, string contentType)
     {
@@ -59,14 +59,9 @@ fileServerOptions.StaticFileOptions.OnPrepareResponse = ctx =>
 };
 
 // Creating Builder
-#if NET7_0
-var builder = WebApplication.CreateBuilder(args);
-#elif NET8_0
 var builder = WebApplication.CreateSlimBuilder(args);
-#endif
-
 builder.WebHost.ConfigureKestrel(serverOptions => serverOptions.ListenAnyIP(port));
-builder.Services.AddResponseCompression(options => 
+builder.Services.AddResponseCompression(options =>
 {
     options.Providers.Add<GzipCompressionProvider>();
     options.Providers.Add<BrotliCompressionProvider>();

@@ -1,4 +1,6 @@
 .vs
+.config
 bin
 obj
+*.csproj.user
 *.exe
