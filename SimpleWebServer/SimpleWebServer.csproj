@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0</TargetFrameworks>
@@ -14,6 +14,13 @@
 		<IlcOptimizationPreference>Size</IlcOptimizationPreference>
 		<IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
 		<IlcTrimMetadata>true</IlcTrimMetadata>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>LostSignal.SimpleWebServer.2024.09.25</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>brgishy</Authors>
+		<Company>Lost Signal Games</Company>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
